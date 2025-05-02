@@ -1,5 +1,4 @@
 import Movie from '../models/movie.model.js';
-import mongoose from 'mongoose';
 
 export const listMovies = async (req, res, next) => {
   try {
@@ -12,8 +11,10 @@ export const listMovies = async (req, res, next) => {
       director, cast,
       sortBy, sortOrder,
       page = 1,
-      limit = 12
     } = req.query;
+
+    const limit = 12;
+    const skip  = (page - 1) * limit;
 
     const filter = {};
     if (search) {
@@ -47,14 +48,15 @@ export const listMovies = async (req, res, next) => {
       sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
     }
 
-    const skip = (page - 1) * limit;
     let query = Movie.find(filter);
     if (Object.keys(sort).length) {
       query = query.sort(sort);
     }
 
-    const movies = await query.skip(skip).limit(+limit);
-    const total  = await Movie.countDocuments(filter);
+    const [movies, total] = await Promise.all([
+      query.skip(skip).limit(limit),
+      Movie.countDocuments(filter)
+    ]);
 
     res.json({ movies, page: +page, total });
   } catch (err) {

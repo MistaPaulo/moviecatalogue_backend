@@ -5,9 +5,9 @@ import EmbeddedMovie from '../models/embedded.model.js';
 
 export const listComments = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const skip = (page - 1) * limit;
+    const page  = parseInt(req.query.page, 10) || 1;
+    const limit = 10;
+    const skip  = (page - 1) * limit;
 
     const [comments, total] = await Promise.all([
       Comment.find({ movie_id: req.params.id })
